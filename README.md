@@ -1,4 +1,4 @@
-#  Attestify
+#  YieldProof
 
 **Automated DeFi Yield Generation on Celo • AI-Powered Investment Platform**
 
