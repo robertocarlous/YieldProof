@@ -1,4 +1,4 @@
-// Contract addresses for AttestifyVault on Celo networks
+// Contract addresses for AttestifyVault
 export const CONTRACT_ADDRESSES = {
   // Celo Sepolia Testnet (with Fixed Mock Aave for yield testing)
   celoSepolia: {
@@ -7,6 +7,17 @@ export const CONTRACT_ADDRESSES = {
     acUSD: process.env.NEXT_PUBLIC_ACUSD_CONTRACT_ADDRESS || '0xEfE339C84ECf9653fB3df3e2789a19D89466bAB3', // Fixed Mock aCUSD token
     aavePool: process.env.NEXT_PUBLIC_AAVE_POOL_ADDRESS || '0x267Cf7E391fb77329028Cba1C216ffcFb288F983', // Fixed Mock Aave Pool
     selfProtocol: process.env.NEXT_PUBLIC_SELF_PROTOCOL_ADDRESS || '0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74',
+  },
+  // Ethereum Sepolia Testnet (with real Aave V3 - Recommended for production)
+  ethereumSepolia: {
+    vault: process.env.NEXT_PUBLIC_VAULT_CONTRACT_ADDRESS_SEPOLIA || '0x4A4EBc7bfb813069e5495fB36B53cc937A31b441', // USDC Vault (Recommended)
+    vaultAAVE: '0x2d03D266204c1c5c4B29A36c499CA15a72b1C2A0', // AAVE Vault (for testing)
+    usdc: '0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8', // USDC token
+    aEthUSDC: '0x16dA4541aD1807f4443d92D26044C1147406EB80', // aEthUSDC (Aave USDC token)
+    aave: '0x88541670E55cC00bEEFD87eB59EDd1b7C511AC9a', // AAVE token (for testing)
+    aEthAAVE: '0x6b8558764d3b7572136F17174Cb9aB1DDc7E1259', // aEthAAVE (for testing)
+    aavePool: '0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951', // Aave V3 Pool
+    selfProtocol: process.env.NEXT_PUBLIC_SELF_PROTOCOL_ADDRESS || '0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74', // Same Self Protocol address
   },
   // Celo Mainnet (for future use)
   celoMainnet: {
@@ -35,6 +46,17 @@ export const APP_CONFIG = {
         decimals: 18,
       },
     },
+    ethereumSepolia: {
+      chainId: 11155111,
+      name: 'Ethereum Sepolia',
+      rpcUrl: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || 'https://eth-sepolia.public.blastapi.io',
+      explorerUrl: 'https://sepolia.etherscan.io',
+      nativeCurrency: {
+        name: 'Sepolia Ether',
+        symbol: 'ETH',
+        decimals: 18,
+      },
+    },
     celoMainnet: {
       chainId: 42220,
       name: 'Celo',
@@ -51,11 +73,11 @@ export const APP_CONFIG = {
 
 // Vault configuration
 export const VAULT_CONFIG = {
-  minDeposit: '1', // 1 cUSD
-  maxDeposit: '10000', // 10,000 cUSD per transaction
-  maxTVL: '100000', // 100,000 cUSD total (MVP)
+  minDeposit: '1', // 1 token (USDC or cUSD depending on network)
+  maxDeposit: '10000', // 10,000 tokens per transaction
+  maxTVL: '100000', // 100,000 tokens total (MVP)
   reserveRatio: 10, // 10% kept liquid for withdrawals
-  targetAPY: 500, // 5% APY (500 basis points) - Mock Aave yield
+  targetAPY: 350, // 3.5% APY (350 basis points) - Real Aave yield
 };
 
 // Strategy types

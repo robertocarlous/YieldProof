@@ -2,8 +2,13 @@ import VaultABI from './Vault.json';
 
 // Contract addresses
 export const CONTRACT_ADDRESSES = {
+  // Celo Sepolia
   ATTESTIFY_VAULT: "0x9c75cC4A2D319363158dA01d97d5EFec55CED742" as `0x${string}`, // Fixed AttestifyVault
   CUSD_TOKEN: "0xdE9e4C3ce781b4bA68120d6261cbad65ce0aB00b" as `0x${string}`, // Real Celo Sepolia cUSD
+  
+  // Ethereum Sepolia (USDC Vault - Recommended)
+  ATTESTIFY_VAULT_SEPOLIA: "0x4A4EBc7bfb813069e5495fB36B53cc937A31b441" as `0x${string}`, // USDC Vault on Sepolia
+  USDC_TOKEN: "0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8" as `0x${string}`, // USDC on Sepolia
 } as const;
 
 // Self Protocol Config ID

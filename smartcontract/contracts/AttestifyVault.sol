@@ -58,9 +58,9 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
     mapping(StrategyType => Strategy) public strategies;
     
     // Vault limits and configuration
-    uint256 public constant MIN_DEPOSIT = 1e18; // 1 cUSD
-    uint256 public constant MAX_DEPOSIT_PER_USER = 10_000e18; // 10,000 cUSD
-    uint256 public constant MAX_TOTAL_ASSETS = 100_000e18; // 100,000 cUSD TVL cap
+    uint256 public constant MIN_DEPOSIT = 1e18; // 1 token (18 decimals)
+    uint256 public constant MAX_DEPOSIT_PER_USER = 10_000e18; // 10,000 tokens
+    uint256 public constant MAX_TOTAL_ASSETS = 100_000e18; // 100,000 tokens TVL cap
     
     // Admin and governance
     address public aiAgent;
@@ -120,8 +120,8 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
 
     /**
      * @notice Initialize the Attestify Aave Vault
-     * @param _asset The underlying asset (cUSD)
-     * @param _aToken The Aave aToken (acUSD) 
+     * @param _asset The underlying asset (e.g., AAVE, GHO, USDC)
+     * @param _aToken The Aave aToken (e.g., aEthAAVE, aGHO, aUSDC) 
      * @param _aavePool The Aave V3 Pool contract
      */
     constructor(

@@ -40,8 +40,11 @@ npx hardhat run scripts/discover-aave-sepolia.js --network sepolia
 - **AAVE** (underlying): `0x88541670E55cC00bEEFD87eB59EDd1b7C511AC9a` (AAVE token on Sepolia)
 - **aEthAAVE**: `0x6b8558764d3b7572136F17174Cb9aB1DDc7E1259` (Aave Ethereum AAVE aToken)
 
+### USDC Token (Recommended for Yield Vault) ✅ Complete!
+- **USDC**: `0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8` (USDC on Sepolia)
+- **aEthUSDC**: `0x16dA4541aD1807f4443d92D26044C1147406EB80` (Aave Ethereum USDC aToken)
+
 ### Other Common Tokens
-- **USDC**: `0x94a9D9AC8a22534E3FaCa9F4e7F2EF2ebC85182C`
 - **WETH**: `0xfFf9976782d46CC05690D9e90473641edce96502`
 
 ### Aave Pool
@@ -59,6 +62,11 @@ To deploy `AttestifyAaveVault`, we need:
 ### Option 2: Using AAVE ✅ Complete!
 1. ✅ **AAVE Token** (underlying): `0x88541670E55cC00bEEFD87eB59EDd1b7C511AC9a`
 2. ✅ **aEthAAVE Token**: `0x6b8558764d3b7572136F17174Cb9aB1DDc7E1259`
+3. ✅ **Aave Pool**: `0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951`
+
+### Option 3: Using USDC ✅ Complete! (Recommended)
+1. ✅ **USDC Token** (underlying): `0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8`
+2. ✅ **aEthUSDC Token**: `0x16dA4541aD1807f4443d92D26044C1147406EB80`
 3. ✅ **Aave Pool**: `0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951`
 
 ### How to Get aGHO Address
