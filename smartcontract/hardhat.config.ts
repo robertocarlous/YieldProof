@@ -1,8 +1,11 @@
 import { HardhatUserConfig } from "hardhat/config";
+import hardhatVerify from "@nomicfoundation/hardhat-verify";
+import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "dotenv/config";
 
 const config: HardhatUserConfig = {
+  plugins: [hardhatVerify],
   solidity: {
     version: "0.8.28",
     settings: {
@@ -31,9 +34,23 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 11142220,
     },
+    sepolia: {
+      type: "http",
+      url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.public.blastapi.io",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 11155111,
+    },
   },
   sourcify: {
     enabled: true,
+  },
+  verify: {
+    etherscan: {
+      apiKey: process.env.ETHERSCAN_API_KEY || "",
+      // According to https://docs.etherscan.io/v2-migration:
+      // - Use unified endpoint: https://api.etherscan.io/v2/api for all chains
+      // - Chainid is automatically passed as query parameter by the plugin
+    },
   },
 };
 
