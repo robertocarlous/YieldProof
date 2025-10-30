@@ -3,9 +3,9 @@ import './globals.css';
 import { Providers } from './provider';
 
 export const metadata: Metadata = {
-  title: 'Attestify - Verified Savings on Celo',
-  description: 'AI-powered investment vault with privacy-preserving identity verification. Built on Celo.',
-  keywords: ['Celo', 'DeFi', 'Self Protocol', 'Savings', 'Aave Market'],
+  title: 'YieldProof - Verified Savings',
+  description: 'AI-powered investment vault with privacy-preserving identity verification.',
+  keywords: ['Ethereum', 'DeFi', 'Savings', 'Aave V3', 'USDC'],
 };
 
 export default function RootLayout({

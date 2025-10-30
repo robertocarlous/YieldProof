@@ -55,8 +55,8 @@ export default function AIChat({
     const welcomeMessage: Message = {
       role: 'assistant',
       content: isBrianAIConfigured() 
-        ? `Hi! I'm your AI DeFi assistant powered by Attestify AI. 🤖\n\nI can help you:\n• Manage your vault (deposits & withdrawals)\n• Analyze your investment strategy\n• Get market insights and recommendations\n• Answer DeFi questions\n\nWhat would you like to know?`
-        : `Hi! I'm your AI DeFi assistant powered by Attestify AI. ⚠️\n\nBrian AI is not configured yet. To enable AI features:\n1. Get an API key from https://brianknows.org\n2. Add NEXT_PUBLIC_BRIAN_API_KEY to your .env.local\n\nFor now, I can provide basic information about your vault.`,
+        ? `Hi! I'm your AI DeFi assistant powered by YieldProof AI. 🤖\n\nI can help you:\n• Manage your vault (deposits & withdrawals)\n• Analyze your investment strategy\n• Get market insights and recommendations\n• Answer DeFi questions\n\nWhat would you like to know?`
+        : `Hi! I'm your AI DeFi assistant powered by YieldProof AI. ⚠️\n\nBrian AI is not configured yet. To enable AI features:\n1. Get an API key from https://brianknows.org\n2. Add NEXT_PUBLIC_BRIAN_API_KEY to your .env.local\n\nFor now, I can provide basic information about your vault.`,
       timestamp: new Date(),
     };
     setMessages([welcomeMessage]);
@@ -76,7 +76,7 @@ export default function AIChat({
         body: JSON.stringify({
           prompt,
           address,
-          chainId: '44787', // Celo Sepolia testnet
+          chainId: '11155111', // Ethereum Sepolia testnet
           messages: conversationHistory,
         }),
       });
@@ -177,7 +177,7 @@ export default function AIChat({
     // Portfolio queries
     if (currentInput.toLowerCase().includes('balance') || currentInput.toLowerCase().includes('how much')) {
       const earningsNum = parseFloat(earnings);
-      return `📊 Your Attestify Portfolio:\n\n• Vault Balance: ${vaultBalance} cUSD\n• Total Earnings: ${earningsNum > 0.01 ? earningsNum.toFixed(2) : earningsNum.toFixed(6)} cUSD\n• Current APY: ${currentAPY}%\n• Strategy: ${currentStrategy}\n\nYou're earning approximately $${(parseFloat(vaultBalance) * parseFloat(currentAPY) / 100 / 365).toFixed(6)} per day!`;
+      return `📊 Your YieldProof Portfolio:\n\n• Vault Balance: ${vaultBalance} USDC\n• Total Earnings: ${earningsNum > 0.01 ? earningsNum.toFixed(2) : earningsNum.toFixed(6)} USDC\n• Current APY: ${currentAPY}%\n• Strategy: ${currentStrategy}\n\nYou're earning approximately $${(parseFloat(vaultBalance) * parseFloat(currentAPY) / 100 / 365).toFixed(6)} per day!`;
     }
     // Performance queries
     else if (currentInput.toLowerCase().includes('performance') || currentInput.toLowerCase().includes('earning')) {
@@ -186,19 +186,19 @@ export default function AIChat({
       const originalDeposit = vaultBalanceNum - earningsNum;
       const roi = originalDeposit > 0 ? ((earningsNum / originalDeposit) * 100).toFixed(6) : '0.000000';
       
-      return `📈 Your Performance:\n\n• Total Earnings: ${earningsNum > 0.01 ? earningsNum.toFixed(2) : earningsNum.toFixed(6)} cUSD\n• ROI: ${roi}%\n• Current APY: ${currentAPY}%\n• Strategy: ${currentStrategy}\n• Original Deposit: ${originalDeposit.toFixed(2)} cUSD\n\n${earningsNum > 0 ? '✅ You\'re earning yield! Your money is working for you!' : '⏳ Your earnings are accumulating. Give it some time!'}`;
+      return `📈 Your Performance:\n\n• Total Earnings: ${earningsNum > 0.01 ? earningsNum.toFixed(2) : earningsNum.toFixed(6)} USDC\n• ROI: ${roi}%\n• Current APY: ${currentAPY}%\n• Strategy: ${currentStrategy}\n• Original Deposit: ${originalDeposit.toFixed(2)} USDC\n\n${earningsNum > 0 ? '✅ You\'re earning yield! Your money is working for you!' : '⏳ Your earnings are accumulating. Give it some time!'}`;
     }
     // Risk queries
     else if (currentInput.toLowerCase().includes('risk') || currentInput.toLowerCase().includes('safe')) {
-      return `🛡️ Risk Analysis:\n\n**Your Current Strategy: ${currentStrategy}**\n\n• **Smart Contract Risk**: Audited vault contract\n• **Protocol Risk**: Mock Aave integration for testing\n• **Liquidity Risk**: ${currentStrategy === 'Conservative' ? 'Very Low' : currentStrategy === 'Balanced' ? 'Low' : 'Medium'} (${currentStrategy === 'Conservative' ? '100%' : currentStrategy === 'Balanced' ? '90%' : '80%'} deployed)\n• **Market Risk**: Stablecoin (cUSD) minimizes volatility\n\n✅ Overall: Your funds are relatively safe, earning stable yields on Celo Sepolia testnet.`;
+      return `🛡️ Risk Analysis:\n\n**Your Current Strategy: ${currentStrategy}**\n\n• **Smart Contract Risk**: Audited vault contract\n• **Protocol Risk**: Mock Aave integration for testing\n• **Liquidity Risk**: ${currentStrategy === 'Conservative' ? 'Very Low' : currentStrategy === 'Balanced' ? 'Low' : 'Medium'} (${currentStrategy === 'Conservative' ? '100%' : currentStrategy === 'Balanced' ? '90%' : '80%'} deployed)\n• **Market Risk**: Stablecoin (USDC) minimizes volatility\n\n✅ Overall: Your funds are relatively safe, earning stable yields on Sepolia testnet.`;
     }
     // Withdrawal queries
     else if (currentInput.toLowerCase().includes('withdraw') || currentInput.toLowerCase().includes('how can i withdraw')) {
-      return `💸 Withdrawal Process:\n\n1. **Enter Amount**: Specify how much cUSD to withdraw\n2. **Quick Options**: Use 25%, 50%, 75%, or MAX buttons\n3. **Review**: Check withdrawal summary\n4. **Confirm**: Click withdraw button\n\n**Current Balance**: ${vaultBalance} cUSD\n**Available**: You can withdraw your full balance including earnings\n\n💡 **Tip**: Use the MAX button to withdraw everything!`;
+      return `💸 Withdrawal Process:\n\n1. **Enter Amount**: Specify how much USDC to withdraw\n2. **Quick Options**: Use 25%, 50%, 75%, or MAX buttons\n3. **Review**: Check withdrawal summary\n4. **Confirm**: Click withdraw button\n\n**Current Balance**: ${vaultBalance} USDC\n**Available**: You can withdraw your full balance including earnings\n\n💡 **Tip**: Use the MAX button to withdraw everything!`;
     }
     // Deposit queries
     else if (currentInput.toLowerCase().includes('deposit') || currentInput.toLowerCase().includes('how can i deposit')) {
-      return `💰 Deposit Process:\n\n1. **Enter Amount**: Specify cUSD amount to deposit\n2. **Approve**: Allow vault to spend your cUSD\n3. **Deposit**: Funds go to Mock Aave for yield\n4. **Earn**: Start earning ${currentAPY}% APY immediately\n\n**Minimum**: ${minDeposit || '1.00'} cUSD\n**Maximum**: ${maxDeposit || '10,000.00'} cUSD\n**Current APY**: ${currentAPY}%\n**Strategy**: ${currentStrategy}\n\n💡 **Tip**: The more you deposit, the more you earn!`;
+      return `💰 Deposit Process:\n\n1. **Enter Amount**: Specify USDC amount to deposit\n2. **Approve**: Allow vault to spend your USDC\n3. **Deposit**: Funds go to Mock Aave for yield\n4. **Earn**: Start earning ${currentAPY}% APY immediately\n\n**Minimum**: ${minDeposit || '1.00'} USDC\n**Maximum**: ${maxDeposit || '10,000.00'} USDC\n**Current APY**: ${currentAPY}%\n**Strategy**: ${currentStrategy}\n\n💡 **Tip**: The more you deposit, the more you earn!`;
     }
     // DeFi knowledge queries - try Brian Knowledge API
     else if (currentInput.toLowerCase().includes('what is') || 
@@ -214,11 +214,11 @@ export default function AIChat({
           const knowledgeResponse = await getDeFiKnowledge(currentInput, 'celo');
           let response = knowledgeResponse.answer;
           
-          // Add Attestify context if relevant
+          // Add YieldProof context if relevant
           if (response.toLowerCase().includes('yield') || 
               response.toLowerCase().includes('apy') || 
               response.toLowerCase().includes('earning')) {
-            response += `\n\n**Your Attestify Vault:**\n• Current Balance: ${vaultBalance} cUSD\n• APY: ${currentAPY}%\n• Strategy: ${currentStrategy}\n• Total Earnings: ${earnings} cUSD`;
+            response += `\n\n**Your YieldProof Vault:**\n• Current Balance: ${vaultBalance} USDC\n• APY: ${currentAPY}%\n• Strategy: ${currentStrategy}\n• Total Earnings: ${earnings} USDC`;
           }
           
           // Add sources if available
@@ -236,11 +236,11 @@ export default function AIChat({
       }
       
       // Fallback for DeFi questions
-      return `🤖 I can help explain DeFi concepts! Here's what I know about your question:\n\n**DeFi Basics:**\n• DeFi = Decentralized Finance\n• Uses smart contracts instead of banks\n• You control your own funds\n• Earn yield through protocols like Aave\n\n**Your Attestify Experience:**\n• You're already using DeFi! 🎉\n• Your cUSD earns yield through Mock Aave\n• Current APY: ${currentAPY}%\n• Strategy: ${currentStrategy}\n\n**Want to learn more?** Ask me about:\n• Yield farming\n• Liquidity pools\n• Smart contracts\n• Risk management\n\nWhat specific DeFi topic interests you? 🚀`;
+      return `🤖 I can help explain DeFi concepts! Here's what I know about your question:\n\n**DeFi Basics:**\n• DeFi = Decentralized Finance\n• Uses smart contracts instead of banks\n• You control your own funds\n• Earn yield through protocols like Aave\n\n**Your YieldProof Experience:**\n• You're already using DeFi! 🎉\n• Your USDC earns yield through Mock Aave\n• Current APY: ${currentAPY}%\n• Strategy: ${currentStrategy}\n\n**Want to learn more?** Ask me about:\n• Yield farming\n• Liquidity pools\n• Smart contracts\n• Risk management\n\nWhat specific DeFi topic interests you? 🚀`;
     }
     // Default fallback
     else {
-      return `🤖 I'm your Attestify AI assistant! I can help you with:\n\n**Vault Management:**\n• Check your balance and earnings\n• Deposit or withdraw funds\n• Analyze your performance\n• Assess risks\n\n**Financial Advice:**\n• Strategy recommendations\n• Yield optimization tips\n• DeFi education\n\n**Quick Actions:**\n• Click the buttons below for instant help\n• Ask me anything about your vault!\n\nWhat would you like to know? 🚀`;
+      return `🤖 I'm your YieldProof AI assistant! I can help you with:\n\n**Vault Management:**\n• Check your balance and earnings\n• Deposit or withdraw funds\n• Analyze your performance\n• Assess risks\n\n**Financial Advice:**\n• Strategy recommendations\n• Yield optimization tips\n• DeFi education\n\n**Quick Actions:**\n• Click the buttons below for instant help\n• Ask me anything about your vault!\n\nWhat would you like to know? 🚀`;
     }
   };
 
@@ -255,13 +255,13 @@ export default function AIChat({
       case 'deposit':
         if (action.amount && onDeposit) {
           onDeposit(action.amount);
-          addMessage('assistant', `✅ Initiating deposit of ${action.amount} cUSD...`);
+          addMessage('assistant', `✅ Initiating deposit of ${action.amount} USDC...`);
         }
         break;
       case 'withdraw':
         if (action.amount && onWithdraw) {
           onWithdraw(action.amount);
-          addMessage('assistant', `✅ Initiating withdrawal of ${action.amount} cUSD...`);
+          addMessage('assistant', `✅ Initiating withdrawal of ${action.amount} USDC...`);
         }
         break;
       case 'strategy':

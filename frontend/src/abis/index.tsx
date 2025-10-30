@@ -1,14 +1,9 @@
 import VaultABI from './Vault.json';
 
-// Contract addresses
+// Contract addresses (YieldProof - Ethereum Sepolia)
 export const CONTRACT_ADDRESSES = {
-  // Celo Sepolia
-  ATTESTIFY_VAULT: "0x9c75cC4A2D319363158dA01d97d5EFec55CED742" as `0x${string}`, // Fixed AttestifyVault
-  CUSD_TOKEN: "0xdE9e4C3ce781b4bA68120d6261cbad65ce0aB00b" as `0x${string}`, // Real Celo Sepolia cUSD
-  
-  // Ethereum Sepolia (USDC Vault - Recommended)
-  ATTESTIFY_VAULT_SEPOLIA: "0x4A4EBc7bfb813069e5495fB36B53cc937A31b441" as `0x${string}`, // USDC Vault on Sepolia
-  USDC_TOKEN: "0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8" as `0x${string}`, // USDC on Sepolia
+  VAULT: "0x4ce1c053082208874195cF322FD142842024edeF" as `0x${string}`, // USDC Vault on Sepolia (18 decimals)
+  USDC: "0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8" as `0x${string}`, // USDC on Sepolia
 } as const;
 
 // Self Protocol Config ID
@@ -17,7 +12,7 @@ export const SELF_PROTOCOL_CONFIG_ID = "0x986751c577aa5cfaef6f49fa2a46fa273b04e1
 // Import ABI from JSON file
 export const ATTESTIFY_VAULT_ABI = VaultABI.abi;
 
-// ERC20 Token ABI (for cUSD approval and balance checks)
+// ERC20 Token ABI (for USDC approval and balance checks)
 export const ERC20_ABI = [
   {
     name: 'approve',
@@ -64,15 +59,18 @@ export const ERC20_ABI = [
 
 // Contract configuration
 export const CONTRACT_CONFIG = {
-  address: CONTRACT_ADDRESSES.ATTESTIFY_VAULT,
+  address: CONTRACT_ADDRESSES.VAULT,
   abi: ATTESTIFY_VAULT_ABI,
 } as const;
 
-// cUSD Token configuration
-export const CUSD_CONFIG = {
-  address: CONTRACT_ADDRESSES.CUSD_TOKEN,
+// USDC Token configuration
+export const USDC_CONFIG = {
+  address: CONTRACT_ADDRESSES.USDC,
   abi: ERC20_ABI,
 } as const;
+
+// Legacy alias for backward compatibility
+export const CUSD_CONFIG = USDC_CONFIG;
 
 // Strategy types enum
 export const STRATEGY_TYPES = {

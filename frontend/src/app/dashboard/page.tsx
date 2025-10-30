@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { formatEther, parseEther } from 'viem';
+import { formatEther, parseEther, formatUnits, parseUnits } from 'viem';
 import { 
   TrendingUp, 
   DollarSign, 
@@ -24,9 +24,10 @@ import {
 import { Line, LineChart, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Navbar from '@/components/Navbar';
 import Link from 'next/link';
-import { CONTRACT_CONFIG, CUSD_CONFIG, CONTRACT_ADDRESSES } from '@/abis';
-import VerificationModal from '@/components/VerificationModal';
+import { CONTRACT_CONFIG, USDC_CONFIG, CONTRACT_ADDRESSES as ABIS_CONTRACT_ADDRESSES } from '@/abis';
+import { CONTRACT_ADDRESSES } from '@/config/contracts';
 import AIChat from '@/components/AIChat';
+import FaucetInfo from '@/components/FaucetInfo';
 
 
 
@@ -35,9 +36,7 @@ export default function Dashboard() {
   const { address, isConnected } = useAccount();
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [activeSection, setActiveSection] = useState<'overview' | 'chat' | 'strategy' | 'analytics'>('overview');
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [isVerificationComplete, setIsVerificationComplete] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('overview');
   const [depositStep, setDepositStep] = useState<'input' | 'approving' | 'depositing' | 'success' | 'error'>('input');
   const [withdrawStep, setWithdrawStep] = useState<'input' | 'withdrawing' | 'success' | 'error'>('input');
   const [strategyStep, setStrategyStep] = useState<'input' | 'changing' | 'success' | 'error'>('input');
@@ -47,23 +46,7 @@ export default function Dashboard() {
   const [balanceHistory, setBalanceHistory] = useState<Array<{date: string, value: number, timestamp: number}>>([]);
   const [lastBalanceUpdate, setLastBalanceUpdate] = useState<number>(0);
 
-  // Check verification status
-  const { data: isVerified, refetch: refetchVerification } = useReadContract({
-    ...CONTRACT_CONFIG,
-    functionName: 'isVerified',
-    args: address ? [address] : undefined,
-    query: {
-      enabled: !!address,
-      refetchInterval: 5000,
-    },
-  });
-
-  // Reset verification complete state when contract confirms verification
-  useEffect(() => {
-    if (isVerified) {
-      setIsVerificationComplete(false);
-    }
-  }, [isVerified]);
+  // Verification is no longer required - users can access vault directly
 
   // Real contract data
   const { data: balance } = useReadContract({
@@ -71,7 +54,7 @@ export default function Dashboard() {
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address && !!isVerified,
+      enabled: !!address,
       refetchInterval: 10000,
     },
   });
@@ -81,7 +64,7 @@ export default function Dashboard() {
     functionName: 'getEarnings',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address && !!isVerified,
+      enabled: !!address,
       refetchInterval: 10000,
     },
   });
@@ -90,7 +73,7 @@ export default function Dashboard() {
     ...CONTRACT_CONFIG,
     functionName: 'getCurrentAPY',
     query: {
-      enabled: !!address && !!isVerified,
+      enabled: !!address,
     },
   });
 
@@ -114,9 +97,9 @@ export default function Dashboard() {
     functionName: 'MAX_DEPOSIT',
   });
 
-  // Get cUSD balance
-  const { data: cUsdBalance, refetch: refetchCusdBalance } = useReadContract({
-    ...CUSD_CONFIG,
+  // Get USDC balance
+  const { data: usdcBalance, refetch: refetchUsdcBalance } = useReadContract({
+    ...USDC_CONFIG,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     query: {
@@ -125,11 +108,11 @@ export default function Dashboard() {
     },
   });
 
-  // Get cUSD allowance for vault
+  // Get USDC allowance for vault
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    ...CUSD_CONFIG,
+    ...USDC_CONFIG,
     functionName: 'allowance',
-    args: address ? [address, CONTRACT_ADDRESSES.ATTESTIFY_VAULT] : undefined,
+    args: address ? [address, CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`] : undefined,
     query: {
       enabled: !!address,
     },
@@ -141,7 +124,7 @@ export default function Dashboard() {
     functionName: 'userStrategy',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address && !!isVerified,
+      enabled: !!address,
     },
   });
 
@@ -151,7 +134,7 @@ export default function Dashboard() {
     functionName: 'shares',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address && !!isVerified,
+      enabled: !!address,
       refetchInterval: 10000,
     },
   });
@@ -162,7 +145,7 @@ export default function Dashboard() {
     functionName: 'users',
     args: address ? [address] : undefined,
     query: {
-      enabled: !!address && !!isVerified,
+      enabled: !!address,
       refetchInterval: 10000,
     },
   });
@@ -221,6 +204,8 @@ export default function Dashboard() {
     hash: strategyHash,
   });
 
+  // Vault shares use 18 decimals, USDC has 6 decimals
+  // balance is vault shares (18 decimals), earnings are also 18 decimals
   const balanceDisplay = balance ? formatEther(balance as bigint) : '0.00';
   const earningsDisplay = earnings ? formatEther(earnings as bigint) : '0.00';
   const apyDisplay = currentAPY ? (Number(currentAPY) / 100).toFixed(2) : '0.00';
@@ -328,8 +313,7 @@ export default function Dashboard() {
       console.log('✅ Deposit successful!');
       setDepositStep('success');
       setDepositAmount('');
-      refetchVerification();
-      refetchCusdBalance();
+      refetchUsdcBalance();
       refetchAllowance();
       setTimeout(() => setDepositStep('input'), 3000);
     }
@@ -342,7 +326,7 @@ export default function Dashboard() {
       let errorMessage = 'Transaction failed';
       
       if (depositError.message.includes('InvalidAmount')) {
-        errorMessage = 'Amount must be at least 1 cUSD';
+        errorMessage = 'Amount must be at least 1 USDC';
       } else if (depositError.message.includes('NotVerified')) {
         errorMessage = 'Please verify your identity first';
       } else if (depositError.message.includes('ExceedsMaxDeposit')) {
@@ -350,7 +334,7 @@ export default function Dashboard() {
       } else if (depositError.message.includes('ExceedsMaxTVL')) {
         errorMessage = 'Vault has reached maximum capacity';
       } else if (depositError.message.includes('insufficient funds')) {
-        errorMessage = 'Insufficient gas or cUSD balance';
+        errorMessage = 'Insufficient gas or USDC balance';
       }
       
       setTxError(errorMessage);
@@ -365,8 +349,7 @@ export default function Dashboard() {
       console.log('✅ Withdrawal successful!');
       setWithdrawStep('success');
       setWithdrawAmount('');
-      refetchVerification();
-      refetchCusdBalance();
+      refetchUsdcBalance();
       setTimeout(() => setWithdrawStep('input'), 3000);
     }
   }, [isWithdrawSuccess]);
@@ -381,31 +364,26 @@ export default function Dashboard() {
     }
   }, [isStrategySuccess]);
 
-  // Handle verification completion
-  const handleVerificationComplete = () => {
-    console.log('🔄 Refetching verification status...');
-    setIsVerificationComplete(true);
-    refetchVerification();
-    setShowVerificationModal(false);
-  };
 
   // Validate deposit amount
   const validateDepositAmount = (): string | null => {
     if (!depositAmount || depositAmount === '0') return 'Please enter an amount';
     
     try {
-      const amount = parseEther(depositAmount);
+      // Convert USDC amount to 18 decimals for comparison with vault limits
+      const usdcAmount = parseUnits(depositAmount, 6);
+      const vaultAmount = BigInt(usdcAmount) * BigInt(1e12);
       
-      if (minDeposit && typeof minDeposit === 'bigint' && amount < minDeposit) {
-        return `Minimum deposit is ${formatEther(minDeposit)} cUSD`;
+      if (minDeposit && typeof minDeposit === 'bigint' && vaultAmount < minDeposit) {
+        return `Minimum deposit is ${formatEther(minDeposit)} USDC`;
       }
       
-      if (maxDeposit && typeof maxDeposit === 'bigint' && amount > maxDeposit) {
-        return `Maximum deposit is ${formatEther(maxDeposit)} cUSD`;
+      if (maxDeposit && typeof maxDeposit === 'bigint' && vaultAmount > maxDeposit) {
+        return `Maximum deposit is ${formatEther(maxDeposit)} USDC`;
       }
       
-      if (cUsdBalance && typeof cUsdBalance === 'bigint' && amount > cUsdBalance) {
-        return `Insufficient cUSD balance. You have ${formatEther(cUsdBalance)} cUSD`;
+      if (usdcBalance && typeof usdcBalance === 'bigint' && usdcAmount > usdcBalance) {
+        return `Insufficient USDC balance. You have ${formatUnits(usdcBalance, 6)} USDC`;
       }
     } catch {
       return 'Invalid amount';
@@ -422,8 +400,8 @@ export default function Dashboard() {
     const balance = parseFloat(balanceDisplay);
     
     if (isNaN(amount) || amount <= 0) return 'Please enter a valid amount';
-    if (amount < 0.01) return 'Minimum withdrawal is 0.01 cUSD';
-    if (amount > balance) return `Insufficient balance. You have ${balanceDisplay} cUSD`;
+    if (amount < 0.01) return 'Minimum withdrawal is 0.01 USDC';
+    if (amount > balance) return `Insufficient balance. You have ${balanceDisplay} USDC`;
     
     return null;
   };
@@ -439,15 +417,20 @@ export default function Dashboard() {
         return;
       }
 
-      const amount = parseEther(depositAmount);
+      // Convert USDC amount (6 decimals) to vault decimals (18)
+      const usdcAmount = parseUnits(depositAmount, 6);
+      const amount = BigInt(usdcAmount) * BigInt(1e12);
+      
+      // For approval, we need USDC amount (6 decimals), not vault amount (18)
+      const usdcAmountForApproval = parseUnits(depositAmount, 6);
       
       // Check if approval is needed
-      if (!allowance || allowance < amount) {
+      if (!allowance || allowance < usdcAmountForApproval) {
         setDepositStep('approving');
         writeApproval({
-          ...CUSD_CONFIG,
+          ...USDC_CONFIG,
           functionName: 'approve',
-          args: [CONTRACT_ADDRESSES.ATTESTIFY_VAULT, amount],
+          args: [CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`, usdcAmountForApproval],
         });
       } else {
         // Already approved, deposit directly
@@ -455,7 +438,7 @@ export default function Dashboard() {
         writeDeposit({
           ...CONTRACT_CONFIG,
           functionName: 'deposit',
-          args: [amount],
+          args: [amount, address!],
         });
       }
     } catch (error: unknown) {
@@ -469,11 +452,13 @@ export default function Dashboard() {
   // Handle deposit after approval
   const handleDepositAfterApproval = () => {
     try {
-      const amount = parseEther(depositAmount);
+      // Convert USDC amount (6 decimals) to vault decimals (18)
+      const usdcAmount = parseUnits(depositAmount, 6);
+      const amount = BigInt(usdcAmount) * BigInt(1e12);
       writeDeposit({
         ...CONTRACT_CONFIG,
         functionName: 'deposit',
-        args: [amount],
+        args: [amount, address!],
         gas: BigInt(500000), // Increased gas limit
       });
     } catch (error: unknown) {
@@ -546,36 +531,6 @@ export default function Dashboard() {
     );
   }
 
-  // Show verification screen if not verified and verification not just completed
-  if (!isVerified && !isVerificationComplete) {
-    return (
-      <>
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Shield className="h-8 w-8 text-green-600" />
-          </div>
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">Verify Your Identity</h2>
-          <p className="text-gray-600 mb-6">
-            You need to verify your identity with Self Protocol before you can start earning.
-          </p>
-            <button 
-              onClick={() => setShowVerificationModal(true)}
-              className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all shadow-lg"
-            >
-            Start Verification
-          </button>
-        </div>
-      </div>
-
-        <VerificationModal
-          isOpen={showVerificationModal}
-          onClose={() => setShowVerificationModal(false)}
-          onVerified={handleVerificationComplete}
-        />
-      </>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -692,7 +647,7 @@ export default function Dashboard() {
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <TrendingUp className="h-4 w-4" />
-                      <span>+{parseFloat(earningsDisplay) > 0.01 ? parseFloat(earningsDisplay).toFixed(2) : parseFloat(earningsDisplay).toFixed(6)} cUSD earned</span>
+                      <span>+{parseFloat(earningsDisplay) > 0.01 ? parseFloat(earningsDisplay).toFixed(2) : parseFloat(earningsDisplay).toFixed(6)} USDC earned</span>
                     </div>
                   </div>
 
@@ -804,18 +759,24 @@ export default function Dashboard() {
                     <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                       <ArrowUpRight className="h-5 w-5 text-green-600" />
                     </div>
+                    {/* Show faucet link if no USDC balance */}
+                    {(!usdcBalance || Number(formatUnits(usdcBalance, 6)) < 1) && (
+                      <div className="mb-4">
+                        <FaucetInfo />
+                      </div>
+                    )}
                     <h4 className="font-semibold text-gray-900 mb-2">Deposit</h4>
                     <p className="text-sm text-gray-600 mb-4">Add funds to start earning</p>
                     
                     {/* Wallet Balance */}
                     <div className="mb-3 flex justify-between text-xs text-gray-600">
                       <span>Wallet Balance:</span>
-                      <span className="font-medium">{cUsdBalance ? formatEther(cUsdBalance) : '0.00'} cUSD</span>
+                      <span className="font-medium">{usdcBalance ? formatUnits(usdcBalance, 6) : '0.00'} USDC</span>
                     </div>
 
                     <input
                       type="number"
-                      placeholder="Amount in cUSD"
+                      placeholder="Amount in USDC"
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
                       disabled={depositStep !== 'input'}
@@ -824,7 +785,7 @@ export default function Dashboard() {
                     
                     {/* Min/Max info */}
                     <div className="mb-3 text-xs text-gray-500">
-                      Min: {minDeposit && typeof minDeposit === 'bigint' ? formatEther(minDeposit) : '10'} cUSD | Max: {maxDeposit && typeof maxDeposit === 'bigint' ? formatEther(maxDeposit) : '10,000'} cUSD
+                      Min: {minDeposit && typeof minDeposit === 'bigint' ? formatEther(minDeposit) : '1'} USDC | Max: {maxDeposit && typeof maxDeposit === 'bigint' ? formatEther(maxDeposit) : '10,000'} USDC
                     </div>
 
                     {depositStep === 'input' && (
@@ -840,7 +801,7 @@ export default function Dashboard() {
                           disabled={!depositAmount || depositAmount === '0' || !!isPaused}
                           className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
                         >
-                          {isPaused ? 'Deposits Paused' : '💰 Deposit cUSD'}
+                          {isPaused ? 'Deposits Paused' : '💰 Deposit USDC'}
                         </button>
                       </>
                     )}
@@ -848,7 +809,7 @@ export default function Dashboard() {
                     {depositStep === 'approving' && (
                       <button disabled className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium flex items-center justify-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Approving cUSD...
+                        Approving USDC...
                       </button>
                     )}
 
@@ -886,12 +847,12 @@ export default function Dashboard() {
                     <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Available Balance:</span>
-                        <span className="font-semibold text-gray-900">{balanceDisplay} cUSD</span>
+                        <span className="font-semibold text-gray-900">{balanceDisplay} USDC</span>
                       </div>
                       <div className="flex justify-between items-center mt-1">
                         <span className="text-xs text-gray-500">Total Earnings:</span>
                         <span className="text-xs text-green-600 font-medium">
-                          +{parseFloat(earningsDisplay) > 0.01 ? parseFloat(earningsDisplay).toFixed(2) : parseFloat(earningsDisplay).toFixed(6)} cUSD
+                          +{parseFloat(earningsDisplay) > 0.01 ? parseFloat(earningsDisplay).toFixed(2) : parseFloat(earningsDisplay).toFixed(6)} USDC
                         </span>
                       </div>
                     </div>
@@ -919,7 +880,7 @@ export default function Dashboard() {
                         </button>
                       </div>
                       <div className="mt-2 text-xs text-gray-500">
-                        Enter amount in cUSD (minimum 0.01 cUSD)
+                        Enter amount in USDC (minimum 0.01 USDC)
                       </div>
                     </div>
 
@@ -951,12 +912,12 @@ export default function Dashboard() {
                         <div className="space-y-1 text-xs text-blue-800">
                           <div className="flex justify-between">
                             <span>Amount to withdraw:</span>
-                            <span className="font-medium">{withdrawAmount} cUSD</span>
+                            <span className="font-medium">{withdrawAmount} USDC</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Remaining balance:</span>
                             <span className="font-medium">
-                              {(parseFloat(balanceDisplay) - parseFloat(withdrawAmount)).toFixed(2)} cUSD
+                              {(parseFloat(balanceDisplay) - parseFloat(withdrawAmount)).toFixed(2)} USDC
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -979,7 +940,7 @@ export default function Dashboard() {
                           ? 'Enter Amount' 
                           : parseFloat(withdrawAmount) > parseFloat(balanceDisplay)
                           ? 'Insufficient Balance'
-                          : `Withdraw ${withdrawAmount} cUSD`
+                          : `Withdraw ${withdrawAmount} USDC`
                         }
                       </button>
                     )}
@@ -1031,8 +992,8 @@ export default function Dashboard() {
               currentAPY={apyDisplay}
               currentStrategy={userStrategy === 0 ? 'Conservative' : userStrategy === 1 ? 'Balanced' : 'Growth'}
               earnings={earningsDisplay}
-              minDeposit={minDeposit ? formatEther(minDeposit as bigint) : '1.00'}
-              maxDeposit={maxDeposit ? formatEther(maxDeposit as bigint) : '10,000.00'}
+              minDeposit={minDeposit ? parseFloat(formatEther(minDeposit as bigint)).toFixed(0) : '1'}
+              maxDeposit={maxDeposit ? parseFloat(formatEther(maxDeposit as bigint)).toFixed(0) : '10000'}
               onDeposit={handleDeposit}
               onWithdraw={handleWithdraw}
               onStrategyChange={handleStrategyChange}
@@ -1537,12 +1498,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Verification Modal */}
-      <VerificationModal
-        isOpen={showVerificationModal}
-        onClose={() => setShowVerificationModal(false)}
-        onVerified={handleVerificationComplete}
-      />
     </div>
   );
 }

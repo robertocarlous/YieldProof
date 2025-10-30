@@ -1,9 +1,7 @@
-import { BrianSDK } from '@brian-ai/sdk';
-
-// Initialize Brian AI SDK
-export const brianAI = new BrianSDK({
-  apiKey: process.env.NEXT_PUBLIC_BRIAN_API_KEY || '',
-});
+// Note: Brian AI SDK is not used - we use REST API endpoints directly
+// The SDK initialization caused errors on module load, especially when API key is missing
+// All functionality is accessed via REST API calls which fully support Ethereum Sepolia testnet
+// No SDK initialization needed - REST API works independently
 
 export interface TransactionIntent {
   action: 'deposit' | 'withdraw' | 'swap' | 'transfer' | 'unknown';
@@ -126,7 +124,7 @@ export async function extractIntent(
     return {
       action,
       amount: extractAmountFromPrompt(prompt),
-      token: 'cUSD', // Default to cUSD for Attestify
+      token: 'USDC', // Default to USDC for YieldProof
       data: resultData,
     };
   } catch (error) {
@@ -176,11 +174,11 @@ export async function getRecommendation(
     }
 
     const prompt = `
-      I'm using a DeFi yield vault on Celo called Attestify. Here's my current situation:
-      - Vault Balance: ${context.vaultBalance} cUSD
+      I'm using a DeFi yield vault called YieldProof. Here's my current situation:
+      - Vault Balance: ${context.vaultBalance} USDC
       - Current APY: ${context.currentAPY}%
       - Strategy: ${context.strategy}
-      - Total Earnings: ${context.earnings} cUSD
+      - Total Earnings: ${context.earnings} USDC
       
       What strategies would you recommend to optimize my yield? Should I change my allocation?
     `;
@@ -193,7 +191,7 @@ export async function getRecommendation(
       },
       body: JSON.stringify({
         prompt,
-        kb: 'celo',
+        kb: 'ethereum',
       }),
     });
 
@@ -217,14 +215,14 @@ export async function getRecommendation(
 export async function explainTransaction(
   action: string,
   amount: string,
-  token: string = 'cUSD'
+  token: string = 'USDC'
 ): Promise<string> {
   try {
     if (!process.env.NEXT_PUBLIC_BRIAN_API_KEY) {
       return `This will ${action} ${amount} ${token}.`;
     }
 
-    const prompt = `Explain in simple terms what happens when I ${action} ${amount} ${token} to/from the Attestify vault on Celo. Keep it brief and clear.`;
+    const prompt = `Explain in simple terms what happens when I ${action} ${amount} ${token} to/from the YieldProof vault. Keep it brief and clear.`;
 
     const response = await fetch('https://api.brianknows.org/api/v0/knowledge', {
       method: 'POST',
@@ -234,7 +232,7 @@ export async function explainTransaction(
       },
       body: JSON.stringify({
         prompt,
-        kb: 'celo',
+        kb: 'ethereum',
       }),
     });
 
@@ -274,8 +272,8 @@ export async function analyzeStrategy(
       Analyze my DeFi investment strategy:
       - Strategy: ${strategyType}
       - Time in vault: ${context.timeInVault}
-      - Total deposited: ${context.totalDeposited} cUSD
-      - Total earnings: ${context.totalEarnings} cUSD
+      - Total deposited: ${context.totalDeposited} USDC
+      - Total earnings: ${context.totalEarnings} USDC
       - Current APY: ${context.currentAPY}%
       
       Is this strategy performing well? Should I consider switching?
@@ -289,7 +287,7 @@ export async function analyzeStrategy(
       },
       body: JSON.stringify({
         prompt,
-        kb: 'celo',
+        kb: 'ethereum',
       }),
     });
 
@@ -308,7 +306,7 @@ export async function analyzeStrategy(
 }
 
 /**
- * Get market insights for Celo DeFi
+ * Get market insights for Ethereum DeFi
  */
 export async function getMarketInsights(): Promise<string> {
   try {
@@ -316,7 +314,7 @@ export async function getMarketInsights(): Promise<string> {
       return "Market insights require Brian AI API key configuration.";
     }
 
-    const prompt = `What are the current best yield opportunities for cUSD stablecoins on Celo? What's the market sentiment?`;
+    const prompt = `What are the current best yield opportunities for USDC stablecoins? What's the market sentiment?`;
 
     const response = await fetch('https://api.brianknows.org/api/v0/knowledge', {
       method: 'POST',
@@ -326,7 +324,7 @@ export async function getMarketInsights(): Promise<string> {
       },
       body: JSON.stringify({
         prompt,
-        kb: 'celo',
+        kb: 'ethereum',
       }),
     });
 
@@ -371,7 +369,7 @@ export async function askQuestion(
       },
       body: JSON.stringify({
         prompt: fullPrompt,
-        kb: 'celo', // Use Celo knowledge base
+        kb: 'ethereum', // Use Ethereum knowledge base
       }),
     });
 
@@ -472,7 +470,7 @@ export async function useBrianAgent(
       body: JSON.stringify({
         prompt,
         address: userAddress,
-        chainId: '44787', // Celo Sepolia testnet
+        chainId: '11155111', // Ethereum Sepolia testnet
         messages: conversationHistory,
       }),
     });
@@ -492,7 +490,7 @@ export async function useBrianAgent(
 }
 
 /**
- * Process Brian Agent response for Attestify vault context
+ * Process Brian Agent response for YieldProof vault context
  */
 export function processAgentResponse(
   agentResponse: AgentResponse | null,
@@ -526,7 +524,7 @@ export function processAgentResponse(
     
     if (extractedParams?.action === 'deposit' && extractedParams.amount) {
       return {
-        response: `💰 I can help you deposit ${extractedParams.amount} cUSD into the Attestify vault.\n\n**Transaction Details:**\n• Amount: ${extractedParams.amount} cUSD\n• Protocol: Attestify Vault\n• Network: Celo Sepolia\n• APY: ${vaultContext.currentAPY}%\n• Strategy: ${vaultContext.currentStrategy}\n• Min Deposit: ${vaultContext.minDeposit || '1.00'} cUSD\n• Max Deposit: ${vaultContext.maxDeposit || '10,000.00'} cUSD\n\n**What happens:**\n1. Approve vault to spend your cUSD\n2. Deposit funds into vault\n3. Start earning yield immediately\n4. Funds deployed to Mock Aave\n\nWould you like to proceed with this deposit?`,
+        response: `💰 I can help you deposit ${extractedParams.amount} USDC into the YieldProof vault.\n\n**Transaction Details:**\n• Amount: ${extractedParams.amount} USDC\n• Protocol: YieldProof Vault\n• Network: Ethereum Sepolia\n• APY: ${vaultContext.currentAPY}%\n• Strategy: ${vaultContext.currentStrategy}\n• Min Deposit: ${vaultContext.minDeposit || '1.00'} USDC\n• Max Deposit: ${vaultContext.maxDeposit || '10,000.00'} USDC\n\n**What happens:**\n1. Approve vault to spend your USDC\n2. Deposit funds into vault\n3. Start earning yield immediately\n4. Funds deployed to Aave V3\n\nWould you like to proceed with this deposit?`,
         actionable: {
           type: 'deposit',
           amount: extractedParams.amount,
@@ -536,7 +534,7 @@ export function processAgentResponse(
     
     if (extractedParams?.action === 'withdraw' && extractedParams.amount) {
       return {
-        response: `💸 I can help you withdraw ${extractedParams.amount} cUSD from the Attestify vault.\n\n**Transaction Details:**\n• Amount: ${extractedParams.amount} cUSD\n• Protocol: Attestify Vault\n• Network: Celo Sepolia\n• Current Balance: ${vaultContext.vaultBalance} cUSD\n\n**What happens:**\n1. Withdraw funds from vault\n2. Transfer cUSD to your wallet\n3. Includes principal + earnings\n4. Instant processing\n\nWould you like to proceed with this withdrawal?`,
+        response: `💸 I can help you withdraw ${extractedParams.amount} USDC from the YieldProof vault.\n\n**Transaction Details:**\n• Amount: ${extractedParams.amount} USDC\n• Protocol: YieldProof Vault\n• Network: Ethereum Sepolia\n• Current Balance: ${vaultContext.vaultBalance} USDC\n\n**What happens:**\n1. Withdraw funds from vault\n2. Transfer USDC to your wallet\n3. Includes principal + earnings\n4. Instant processing\n\nWould you like to proceed with this withdrawal?`,
         actionable: {
           type: 'withdraw',
           amount: extractedParams.amount,
@@ -549,11 +547,11 @@ export function processAgentResponse(
   if (result.type === 'read' || result.data?.description) {
     let response = result.data?.description || 'I understand your request.';
     
-    // Add Attestify context to financial advice
+    // Add YieldProof context to financial advice
     if (response.toLowerCase().includes('yield') || 
         response.toLowerCase().includes('apy') || 
         response.toLowerCase().includes('earning')) {
-      response += `\n\n**Your Attestify Vault:**\n• Current Balance: ${vaultContext.vaultBalance} cUSD\n• APY: ${vaultContext.currentAPY}%\n• Strategy: ${vaultContext.currentStrategy}\n• Total Earnings: ${vaultContext.earnings} cUSD`;
+      response += `\n\n**Your YieldProof Vault:**\n• Current Balance: ${vaultContext.vaultBalance} USDC\n• APY: ${vaultContext.currentAPY}%\n• Strategy: ${vaultContext.currentStrategy}\n• Total Earnings: ${vaultContext.earnings} USDC`;
     }
     
     return { response };
@@ -561,7 +559,7 @@ export function processAgentResponse(
   
   // Default response
   return {
-    response: result.data?.description || 'I understand your request. How can I help you with your Attestify vault?',
+    response: result.data?.description || 'I understand your request. How can I help you with your YieldProof vault?',
   };
 }
 

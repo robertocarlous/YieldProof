@@ -53,29 +53,29 @@ export default function VerificationModal({ isOpen, onClose, onVerified }: Verif
 
     console.log('🔍 Initializing Self App...');
     console.log('🔍 Address:', address);
-    console.log('🔍 Contract address:', CONTRACT_ADDRESSES.celoSepolia.vault);
+    console.log('🔍 Contract address:', CONTRACT_ADDRESSES.sepolia.vault);
 
     try {
       // Build Self App configuration - simplified approach
       // Since our contract doesn't integrate with Self Protocol, we'll just use QR code for UX
       console.log('🔍 Building Self App with config:');
       console.log('  - version: 2');
-      console.log('  - appName: Attestify');
+      console.log('  - appName: YieldProof');
       console.log('  - scope: attestify');
       console.log('  - userId:', address);
-      console.log('  - endpoint:', CONTRACT_ADDRESSES.celoSepolia.vault);
-      console.log('  - endpointType: staging_celo');
+      console.log('  - endpoint:', CONTRACT_ADDRESSES.sepolia.vault);
+      console.log('  - endpointType: production');
       
       const app = new SelfAppBuilder({
         version: 2,
-        appName: process.env.NEXT_PUBLIC_SELF_APP_NAME || 'Attestify',
+        appName: process.env.NEXT_PUBLIC_SELF_APP_NAME || 'YieldProof',
         scope: process.env.NEXT_PUBLIC_SELF_SCOPE || 'attestify',
-        endpoint: CONTRACT_ADDRESSES.celoSepolia.vault, // Contract address for staging_celo
+        endpoint: CONTRACT_ADDRESSES.sepolia.vault,
         logoBase64: 'https://i.postimg.cc/mrmVf9hm/self.png',
         userId: address,
-        endpointType: 'staging_celo', // Correct type for Celo Sepolia
+        endpointType: 'production', // Using production for Ethereum
         userIdType: 'hex', // EVM address type
-        userDefinedData: `Attestify verification for ${address}`,
+        userDefinedData: `YieldProof verification for ${address}`,
         disclosures: {
           // Required verifications for DeFi compliance
           minimumAge: 18,
@@ -135,10 +135,10 @@ export default function VerificationModal({ isOpen, onClose, onVerified }: Verif
       // Simple approach: just call contract's verifySelfProof function
       // The contract doesn't validate the proof, just marks user as verified
       console.log('📤 Calling contract verifySelfProof function...');
-      console.log('Contract address:', CONTRACT_ADDRESSES.celoSepolia.vault);
+      console.log('Contract address:', CONTRACT_ADDRESSES.sepolia.vault);
       
       await writeContract({
-        address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+        address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
         abi: ATTESTIFY_VAULT_ABI,
         functionName: 'verifySelfProof',
         args: ['0x', '0x'], // Empty proof and user context data - contract doesn't validate them
@@ -165,7 +165,7 @@ export default function VerificationModal({ isOpen, onClose, onVerified }: Verif
     console.log('🔍 Starting verification with method:', method);
     console.log('🔍 Address:', address);
     console.log('🔍 SelfApp:', selfApp);
-    console.log('🔍 Contract address:', CONTRACT_ADDRESSES.celoSepolia.vault);
+    console.log('🔍 Contract address:', CONTRACT_ADDRESSES.sepolia.vault);
     
     if (!address) {
       setErrorMessage('Please connect your wallet first');

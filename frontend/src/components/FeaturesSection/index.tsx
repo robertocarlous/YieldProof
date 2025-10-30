@@ -19,8 +19,8 @@ export default function FeaturesSection() {
   const features = [
     {
       icon: Shield,
-      title: 'Privacy-Preserving Verification',
-      description: 'Verify your identity using Self Protocol\'s zero-knowledge proofs. Prove you\'re 18+ without revealing personal data.',
+      title: 'Privacy & Security',
+      description: 'Secure and privacy-focused. Your funds are protected by audited smart contracts with bank-grade security.',
       gradient: 'from-green-500 to-emerald-600',
       delay: 0.1,
     },
