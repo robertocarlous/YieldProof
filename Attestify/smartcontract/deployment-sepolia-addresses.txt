@@ -1,0 +1,8 @@
+Network: Celo Sepolia Testnet
+Test cUSD: 0x8a016376332fA74639ddF9CC19fa9D09cE323624
+Vault: 0x9D8d40038EE6783cE524244C11EF7833CC2BEE0d
+Wrapper: 0xABc700e3EE92Ee98D984527ecfD82884Dcc9De8d
+Treasury: 0x95e1CF9174AbD55E47b9EDa1b3f0F2ba0f4369a0
+
+Note: This is a simplified deployment for Celo Sepolia.
+Yield generation will be added when DeFi protocols deploy on Sepolia.

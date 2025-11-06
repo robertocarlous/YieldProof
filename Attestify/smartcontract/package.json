@@ -1,0 +1,17 @@
+{
+  "name": "attestify-smartcontract",
+  "version": "1.0.0",
+  "description": "Attestify Aave V3 Vault - ERC-4626 compliant vault for Celo",
+  "devDependencies": {
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "viem": "^2.38.6",
+    "wagmi": "^2.19.2"
+  }
+}
