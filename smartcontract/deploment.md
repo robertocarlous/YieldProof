@@ -1,0 +1,11 @@
+
+💾 Deployment summary:
+{
+  "Attestifyvault": "0x99dBE4AEa58E518C50a1c04aE9b48C9F6354612f",
+  "cUSD": "0xb9bEECD1A582768711dE1EE7B0A1d582D9d72a6C",
+  "selfProtocol": "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74",
+  "cUSD (Real)": "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+  "acUSD (Real Aave)": "0xBba98352628B0B0c4b40583F593fFCb630935a45",
+  "Aave Pool (Real)": "0x3E59A31363E2ad014dcbc521c4a0d5757d9f3402"
+}
+
