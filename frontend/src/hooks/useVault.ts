@@ -12,64 +12,64 @@ export function useVault() {
 
   // Read user's verification status
   const { data: isVerified } = useReadContract({
-    address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+    address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
     abi: ATTESTIFY_VAULT_ABI,
     functionName: 'isVerified',
     args: address ? [address] : undefined,
-    query: { enabled: !!address && !!CONTRACT_ADDRESSES.celoSepolia.vault },
+    query: { enabled: !!address && !!CONTRACT_ADDRESSES.sepolia.vault },
   });
 
   // Read user's balance
   const { data: userBalance } = useReadContract({
-    address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+    address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
     abi: ATTESTIFY_VAULT_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: !!address && !!CONTRACT_ADDRESSES.celoSepolia.vault },
+    query: { enabled: !!address && !!CONTRACT_ADDRESSES.sepolia.vault },
   });
 
   // Read user's shares
   const { data: userShares } = useReadContract({
-    address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+    address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
     abi: ATTESTIFY_VAULT_ABI,
     functionName: 'shares',
     args: address ? [address] : undefined,
-    query: { enabled: !!address && !!CONTRACT_ADDRESSES.celoSepolia.vault },
+    query: { enabled: !!address && !!CONTRACT_ADDRESSES.sepolia.vault },
   });
 
   // Read user's earnings
   const { data: userEarnings } = useReadContract({
-    address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+    address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
     abi: ATTESTIFY_VAULT_ABI,
     functionName: 'getEarnings',
     args: address ? [address] : undefined,
-    query: { enabled: !!address && !!CONTRACT_ADDRESSES.celoSepolia.vault },
+    query: { enabled: !!address && !!CONTRACT_ADDRESSES.sepolia.vault },
   });
 
   // Read vault statistics
   const { data: vaultStats } = useReadContract({
-    address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+    address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
     abi: ATTESTIFY_VAULT_ABI,
     functionName: 'getVaultStats',
-    query: { enabled: !!CONTRACT_ADDRESSES.celoSepolia.vault },
+    query: { enabled: !!CONTRACT_ADDRESSES.sepolia.vault },
   });
 
   // Read current APY
   const { data: currentAPY } = useReadContract({
-    address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+    address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
     abi: ATTESTIFY_VAULT_ABI,
     functionName: 'getCurrentAPY',
-    query: { enabled: !!CONTRACT_ADDRESSES.celoSepolia.vault },
+    query: { enabled: !!CONTRACT_ADDRESSES.sepolia.vault },
   });
 
   // Functions for interacting with the contract
   const verifyIdentity = async (proof: string) => {
-    if (!CONTRACT_ADDRESSES.celoSepolia.vault) {
+    if (!CONTRACT_ADDRESSES.sepolia.vault) {
       throw new Error('Vault contract address not set');
     }
 
     writeContract({
-      address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+      address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
       abi: ATTESTIFY_VAULT_ABI,
       functionName: 'verifyIdentity',
       args: [proof as `0x${string}`],
@@ -77,12 +77,12 @@ export function useVault() {
   };
 
   const deposit = async (amount: bigint) => {
-    if (!CONTRACT_ADDRESSES.celoSepolia.vault) {
+    if (!CONTRACT_ADDRESSES.sepolia.vault) {
       throw new Error('Vault contract address not set');
     }
 
     writeContract({
-      address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+      address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
       abi: ATTESTIFY_VAULT_ABI,
       functionName: 'deposit',
       args: [amount],
@@ -90,12 +90,12 @@ export function useVault() {
   };
 
   const withdraw = async (amount: bigint) => {
-    if (!CONTRACT_ADDRESSES.celoSepolia.vault) {
+    if (!CONTRACT_ADDRESSES.sepolia.vault) {
       throw new Error('Vault contract address not set');
     }
 
     writeContract({
-      address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+      address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
       abi: ATTESTIFY_VAULT_ABI,
       functionName: 'withdraw',
       args: [amount],
@@ -103,12 +103,12 @@ export function useVault() {
   };
 
   const changeStrategy = async (strategyType: number) => {
-    if (!CONTRACT_ADDRESSES.celoSepolia.vault) {
+    if (!CONTRACT_ADDRESSES.sepolia.vault) {
       throw new Error('Vault contract address not set');
     }
 
     writeContract({
-      address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+      address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
       abi: ATTESTIFY_VAULT_ABI,
       functionName: 'changeStrategy',
       args: [strategyType],
@@ -117,12 +117,12 @@ export function useVault() {
 
   // Manual verification for testing (owner only)
   const manualVerifyForTesting = async (userAddress: string) => {
-    if (!CONTRACT_ADDRESSES.celoSepolia.vault) {
+    if (!CONTRACT_ADDRESSES.sepolia.vault) {
       throw new Error('Vault contract address not set');
     }
 
     writeContract({
-      address: CONTRACT_ADDRESSES.celoSepolia.vault as `0x${string}`,
+      address: CONTRACT_ADDRESSES.sepolia.vault as `0x${string}`,
       abi: ATTESTIFY_VAULT_ABI,
       functionName: 'manualVerifyForTesting',
       args: [userAddress as `0x${string}`],
@@ -171,14 +171,14 @@ export function useVault() {
   };
 }
 
-// Hook for interacting with cUSD token
-export function useCUSD() {
+// Hook for interacting with USDC token
+export function useUSDC() {
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
 
-  // Read cUSD balance
-  const { data: cUSDBalance } = useReadContract({
-    address: CONTRACT_ADDRESSES.celoSepolia.cUSD as `0x${string}`,
+  // Read USDC balance
+  const { data: usdcBalance } = useReadContract({
+    address: CONTRACT_ADDRESSES.sepolia.usdc as `0x${string}`,
     abi: [
       {
         name: 'balanceOf',
@@ -213,10 +213,10 @@ export function useCUSD() {
     query: { enabled: !!address },
   });
 
-  // Approve cUSD for vault
-  const approveCUSD = async (spender: string, amount: bigint) => {
+  // Approve USDC for vault
+  const approveUSDC = async (spender: string, amount: bigint) => {
     writeContract({
-      address: CONTRACT_ADDRESSES.celoSepolia.cUSD as `0x${string}`,
+      address: CONTRACT_ADDRESSES.sepolia.usdc as `0x${string}`,
       abi: [
         {
           name: 'approve',
@@ -235,7 +235,10 @@ export function useCUSD() {
   };
 
   return {
-    balance: cUSDBalance || BigInt(0),
-    approveCUSD,
+    balance: usdcBalance || BigInt(0),
+    approveUSDC,
   };
 }
+
+// Legacy alias for backward compatibility
+export const useCUSD = useUSDC;

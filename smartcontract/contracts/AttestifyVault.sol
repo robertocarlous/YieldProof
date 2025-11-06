@@ -58,9 +58,11 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
     mapping(StrategyType => Strategy) public strategies;
     
     // Vault limits and configuration
-    uint256 public constant MIN_DEPOSIT = 1e18; // 1 cUSD
-    uint256 public constant MAX_DEPOSIT_PER_USER = 10_000e18; // 10,000 cUSD
-    uint256 public constant MAX_TOTAL_ASSETS = 100_000e18; // 100,000 cUSD TVL cap
+    // These are in vault share decimals (18), not underlying asset decimals (6)
+    // Frontend converts USDC amounts to 18 decimals before calling deposit
+    uint256 public constant MIN_DEPOSIT = 1e18; // 1 USDC in vault decimals (1e6 * 1e12)
+    uint256 public constant MAX_DEPOSIT_PER_USER = 10_000e18; // 10,000 USDC in vault decimals
+    uint256 public constant MAX_TOTAL_ASSETS = 100_000e18; // 100,000 USDC in vault decimals
     
     // Admin and governance
     address public aiAgent;
@@ -120,8 +122,8 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
 
     /**
      * @notice Initialize the Attestify Aave Vault
-     * @param _asset The underlying asset (cUSD)
-     * @param _aToken The Aave aToken (acUSD) 
+     * @param _asset The underlying asset (e.g., AAVE, GHO, USDC)
+     * @param _aToken The Aave aToken (e.g., aEthAAVE, aGHO, aUSDC) 
      * @param _aavePool The Aave V3 Pool contract
      */
     constructor(
@@ -187,7 +189,13 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
         whenNotPaused 
         returns (uint256 shares) 
     {
-        if (!users[msg.sender].isVerified) revert NotVerified();
+        // Auto-verify user on first deposit (removed verification requirement)
+        if (!users[receiver].isVerified) {
+            users[receiver].isVerified = true;
+            users[receiver].verifiedAt = block.timestamp;
+            userStrategy[receiver] = StrategyType.CONSERVATIVE;
+        }
+        
         if (assets < MIN_DEPOSIT) revert InvalidAmount();
         if (users[receiver].totalDeposited + assets > MAX_DEPOSIT_PER_USER) revert ExceedsUserLimit();
         if (totalAssets() + assets > MAX_TOTAL_ASSETS) revert ExceedsTVLLimit();
@@ -199,7 +207,9 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
         users[receiver].lastActionTime = block.timestamp;
         totalDeposited += assets;
         
-        SafeERC20.safeTransferFrom(IERC20(asset()), msg.sender, address(this), assets);
+        // Convert from vault decimals (18) to underlying asset decimals (6)
+        uint256 assetAmount = assets / 1e12;
+        SafeERC20.safeTransferFrom(IERC20(asset()), msg.sender, address(this), assetAmount);
         _mint(receiver, shares);
         _deployToAave(assets);
         
@@ -220,7 +230,13 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
         whenNotPaused
         returns (uint256 assets)
     {
-        if (!users[msg.sender].isVerified) revert NotVerified();
+        // Auto-verify user on first mint (removed verification requirement)
+        if (!users[receiver].isVerified) {
+            users[receiver].isVerified = true;
+            users[receiver].verifiedAt = block.timestamp;
+            userStrategy[receiver] = StrategyType.CONSERVATIVE;
+        }
+        
         if (shares == 0) revert ZeroShares();
         
         assets = previewMint(shares);
@@ -232,7 +248,9 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
         users[receiver].lastActionTime = block.timestamp;
         totalDeposited += assets;
         
-        SafeERC20.safeTransferFrom(IERC20(asset()), msg.sender, address(this), assets);
+        // Convert from vault decimals (18) to underlying asset decimals (6)
+        uint256 assetAmount = assets / 1e12;
+        SafeERC20.safeTransferFrom(IERC20(asset()), msg.sender, address(this), assetAmount);
         _mint(receiver, shares);
         _deployToAave(assets);
         
@@ -271,7 +289,10 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
         
         _burn(owner, shares);
         _withdrawFromAave(assets);
-        SafeERC20.safeTransfer(IERC20(asset()), receiver, assets);
+        
+        // Convert from vault decimals (18) to underlying asset decimals (6)
+        uint256 assetAmount = assets / 1e12;
+        SafeERC20.safeTransfer(IERC20(asset()), receiver, assetAmount);
         
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
@@ -308,7 +329,9 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
         // Withdraw from Aave (burns aTokens, returns underlying assets)
         _withdrawFromAave(assets);
         
-        SafeERC20.safeTransfer(IERC20(asset()), receiver, assets);
+        // Convert from vault decimals (18) to underlying asset decimals (6)
+        uint256 assetAmount = assets / 1e12;
+        SafeERC20.safeTransfer(IERC20(asset()), receiver, assetAmount);
         
         emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
@@ -317,50 +340,63 @@ contract AttestifyAaveVault is ERC4626, Ownable, ReentrancyGuard, Pausable {
 
     /**
      * @notice Deploy assets to Aave V3 for yield generation
-     * @param amount Amount to deploy to Aave
+     * @param amount Amount to deploy to Aave (in vault decimals, 18)
      * 
      * @dev Calls IPool.supply() to deposit assets into Aave V3 and receive aTokens.
      * aTokens accrue yield automatically and can be redeemed instantly.
+     * Converts from vault decimals (18) to asset decimals (6 for USDC).
      */
     function _deployToAave(uint256 amount) internal {
         if (amount == 0) return;
         
-        IERC20(asset()).approve(address(aavePool), amount);
-        aavePool.supply(asset(), amount, address(this), 0);
+        // Convert from vault decimals (18) to underlying asset decimals (6)
+        uint256 assetAmount = amount / 1e12;
         
-        emit SuppliedToAave(amount, block.timestamp);
+        IERC20(asset()).approve(address(aavePool), type(uint256).max);
+        aavePool.supply(asset(), assetAmount, address(this), 0);
+        
+        emit SuppliedToAave(assetAmount, block.timestamp);
     }
 
     /**
      * @notice Withdraw assets from Aave V3
-     * @param amount Amount of underlying asset to withdraw from Aave
+     * @param amount Amount to withdraw from Aave (in vault decimals, 18)
      * 
      * @dev Calls IPool.withdraw() to redeem aTokens for underlying assets.
      * Aave automatically calculates the aToken burn amount based on current exchange rate.
+     * Converts from vault decimals (18) to asset decimals (6 for USDC).
      */
     function _withdrawFromAave(uint256 amount) internal {
+        // Convert from vault decimals (18) to underlying asset decimals (6)
+        uint256 assetAmount = amount / 1e12;
+        
         uint256 aTokenBalance = aToken.balanceOf(address(this));
-        require(aTokenBalance >= amount, "Insufficient aTokens");
+        require(aTokenBalance >= assetAmount, "Insufficient aTokens");
         
-        aavePool.withdraw(asset(), amount, address(this));
+        aavePool.withdraw(asset(), assetAmount, address(this));
         
-        emit WithdrawnFromAave(amount, block.timestamp);
+        emit WithdrawnFromAave(assetAmount, block.timestamp);
     }
 
     /* ========== ERC-4626 VIEW FUNCTIONS ========== */
 
     /**
      * @notice Calculate total assets under management (ERC-4626 standard)
-     * @return Total assets in vault (aToken balance which includes accrued yield)
+     * @return Total assets in vault (aToken balance scaled to vault decimals)
      * 
-     * @dev Returns the aToken balance which represents the interest-bearing position in Aave.
+     * @dev Returns the aToken balance scaled to 18 decimals to match vault shares.
+     * For 6-decimal assets like USDC, we multiply by 1e12.
      * When assets are supplied to Aave, underlying tokens are consumed and aTokens are received.
      * aToken.balanceOf(vault) equals original supply plus accrued interest.
      * This value is used as the denominator in share price calculation.
      */
     function totalAssets() public view virtual override returns (uint256) {
-        return aToken.balanceOf(address(this));
+        return aToken.balanceOf(address(this)) * 1e12;
     }
+
+    // ERC4626 vault shares use 18 decimals
+    // totalAssets() returns vault share units (18 decimals) to match share decimals
+    // For 6-decimal assets like USDC, we scale by 1e12
 
     /**
      * @notice Maximum deposit allowed (ERC-4626 standard)

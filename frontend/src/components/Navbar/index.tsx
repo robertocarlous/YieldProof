@@ -57,7 +57,7 @@ export default function Navbar() {
                 transition={{ delay: 0.2 }}
                 className="text-xl font-bold text-gray-900"
               >
-                Attestify
+                YieldProof
               </motion.span>
             </Link>
           </motion.div>

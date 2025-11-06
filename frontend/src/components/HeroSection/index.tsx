@@ -57,7 +57,7 @@ export default function HeroSection() {
             >
               <Shield className="h-4 w-4" />
             </motion.div>
-            <span className="text-sm">Built on Celo • Verified by Self Protocol</span>
+            <span className="text-sm">Built on Ethereum</span>
           </motion.div>
 
           {/* Main Heading */}
@@ -82,7 +82,6 @@ export default function HeroSection() {
               transition={{ duration: 0.6, delay: 1.1 }}
               className="block text-5xl md:text-6xl mt-2"
             >
-              on Celo
             </motion.span>
           </motion.h1>
 

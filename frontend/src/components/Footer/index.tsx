@@ -17,9 +17,8 @@ export default function Footer() {
       { name: 'Dashboard', href: '/dashboard' },
     ],
     resources: [
-      { name: 'Self Protocol', href: 'https://docs.self.xyz', external: true },
       { name: 'Aave Market', href: 'https://docs.Aave.market', external: true },
-      { name: 'Celo Network', href: 'https://docs.celo.org', external: true },
+      { name: 'Ethereum Network', href: 'https://ethereum.org', external: true },
     ],
     community: [
       { name: 'Discord', href: '#', external: true },
@@ -72,7 +71,7 @@ export default function Footer() {
               >
                 <Shield className="h-4 w-4 text-white" />
               </motion.div>
-              <span className="text-xl font-bold">Attestify</span>
+              <span className="text-xl font-bold">YieldProof</span>
             </motion.div>
             <motion.p
               initial={{ opacity: 0 }}
@@ -80,7 +79,7 @@ export default function Footer() {
               transition={{ duration: 0.4, delay: 0.2 }}
               className="text-gray-400 text-sm mb-4"
             >
-              Verified savings on Celo. Earn yield while preserving your privacy.
+              Verified savings. Earn yield while preserving your privacy.
             </motion.p>
             
             {/* Social Links */}
@@ -221,7 +220,7 @@ export default function Footer() {
               whileHover={{ scale: 1.02 }}
               className="text-center md:text-left text-sm text-gray-400"
             >
-              © 2025 Attestify. Built for Celo Proof of Ship.
+              © 2025 YieldProof.
             </motion.p>
             
             <motion.div

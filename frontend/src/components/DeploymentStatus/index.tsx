@@ -13,14 +13,14 @@ export default function DeploymentStatus({ className = '' }: DeploymentStatusPro
   const deploymentSteps = [
     {
       title: '1. Deploy Contract',
-      description: 'Deploy AttestifyVault to Celo Sepolia',
+      description: 'Deploy YieldProof Vault to Ethereum Sepolia',
       status: contractDeployed ? 'completed' : 'pending',
       action: 'Deploy via Remix IDE or Hardhat',
     },
     {
       title: '2. Update Address',
       description: 'Update vault contract address in config',
-      status: contractDeployed && CONTRACT_ADDRESSES.celoSepolia.vault ? 'completed' : 'pending',
+      status: contractDeployed && CONTRACT_ADDRESSES.sepolia.vault ? 'completed' : 'pending',
       action: 'Set NEXT_PUBLIC_VAULT_CONTRACT_ADDRESS',
     },
     {
@@ -31,7 +31,7 @@ export default function DeploymentStatus({ className = '' }: DeploymentStatusPro
     },
     {
       title: '4. Deploy to Mainnet',
-      description: 'Deploy to Celo mainnet for production',
+      description: 'Deploy to Ethereum mainnet for production',
       status: 'pending',
       action: 'Deploy to production',
     },
@@ -39,7 +39,7 @@ export default function DeploymentStatus({ className = '' }: DeploymentStatusPro
 
   useEffect(() => {
     // Check if vault contract address is set
-    if (CONTRACT_ADDRESSES.celoSepolia.vault) {
+    if (CONTRACT_ADDRESSES.sepolia.vault) {
       setContractDeployed(true);
     }
   }, []);
@@ -81,10 +81,10 @@ export default function DeploymentStatus({ className = '' }: DeploymentStatusPro
               <strong>Recommended:</strong> Deploy via Remix IDE
             </p>
             <p className="text-xs text-blue-600">
-              <strong>Contract Addresses:</strong> All configured for Celo Sepolia
+              <strong>Contract Addresses:</strong> All configured for Ethereum Sepolia
             </p>
             <p className="text-xs text-blue-600">
-              <strong>WalletConnect:</strong> App ID configured ({CONTRACT_ADDRESSES.celoSepolia.vault ? 'Connected' : 'Ready'})
+              <strong>WalletConnect:</strong> App ID configured ({CONTRACT_ADDRESSES.sepolia.vault ? 'Connected' : 'Ready'})
             </p>
           </div>
         </div>
@@ -94,10 +94,10 @@ export default function DeploymentStatus({ className = '' }: DeploymentStatusPro
         <div className="mt-6 p-4 bg-green-50 rounded-lg">
           <h4 className="text-sm font-medium text-green-900 mb-2">Contract Deployed!</h4>
           <p className="text-sm text-green-700 mb-2">
-            AttestifyVault is live on Celo Sepolia testnet.
+            YieldProof Vault is live on Sepolia testnet.
           </p>
           <p className="text-xs text-green-600 font-mono">
-            {CONTRACT_ADDRESSES.celoSepolia.vault}
+            {CONTRACT_ADDRESSES.sepolia.vault}
           </p>
         </div>
       )}

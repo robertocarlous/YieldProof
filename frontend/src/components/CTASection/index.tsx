@@ -121,7 +121,7 @@ export default function CTASection() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="text-xl text-white/90 mb-8 max-w-2xl mx-auto"
           >
-            Join verified users earning passive income on Celo
+            Join users earning passive income
           </motion.p>
 
           {/* CTA Button */}
